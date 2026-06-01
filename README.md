@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🥛 Laticínios Popóio — Mercearia Online
 
-## Getting Started
+Sistema web para a mercearia **Laticínios Popóio LTDA** (Rua Mad de Deus, 292 - Mooca, São Paulo - SP), com catálogo online, carrinho, checkout via WhatsApp e painel administrativo.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Next.js 15** (App Router) + **TypeScript** + **Tailwind CSS**
+- **Prisma** + **PostgreSQL**
+- **NextAuth v5** (credenciais)
+- API Routes do próprio Next.js
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuração
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Instale dependências:
+   ```powershell
+   npm install
+   ```
+2. Copie `.env.example` para `.env` e preencha:
+   - `DATABASE_URL` — string do Postgres (Supabase / Neon / Railway)
+   - `AUTH_SECRET` — `openssl rand -base64 32` ou qualquer string longa
+   - `NEXT_PUBLIC_STORE_WHATSAPP` — número da loja (ex.: `5511999999999`)
+3. Aplique o schema:
+   ```powershell
+   npx prisma migrate dev --name init
+   ```
+4. Crie um admin:
+   ```powershell
+   npx tsx scripts/create-admin.ts admin@popoio.com SenhaForte123 "Admin Popoio"
+   ```
+5. Rode em dev:
+   ```powershell
+   npm run dev
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Rotas principais
 
-## Learn More
+| Rota              | Descrição                                       |
+| ----------------- | ----------------------------------------------- |
+| `/`               | Catálogo público                                |
+| `/cart`           | Carrinho (persistido em `localStorage`)         |
+| `/checkout`       | Finalização (exige login) + envio via WhatsApp  |
+| `/orders`         | Histórico de pedidos do cliente                 |
+| `/login`          | Login                                           |
+| `/register`       | Cadastro                                        |
+| `/admin`          | Dashboard com métricas                          |
+| `/admin/products` | CRUD de produtos                                |
+| `/admin/orders`   | Lista e detalhe de pedidos com edição de status |
 
-To learn more about Next.js, take a look at the following resources:
+## Próximos passos sugeridos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Recuperação de senha por e-mail
+- Upload de imagens (Cloudinary ou Vercel Blob)
+- Pagamento online (PIX, gateway)
+- Notificações push
