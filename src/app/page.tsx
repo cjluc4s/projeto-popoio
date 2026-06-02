@@ -50,7 +50,7 @@ export default async function HomePage() {
               Ver produtos
             </a>
             <span className="bg-white/15 backdrop-blur px-4 py-2 rounded-full">
-              🚚 Entregamos na região da Mooca
+              🚚 Entregamos na região da Mooca e proximidades
             </span>
           </div>
         </div>
