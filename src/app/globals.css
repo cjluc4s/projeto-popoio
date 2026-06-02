@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  /* Paleta Laticínios Popoio */
-  --background: #fffaf3; /* creme suave */
+  /* Paleta Laticínios Popoio — inspirada na fachada (vermelho + amarelo pastel) */
+  --background: #fff9ec; /* creme amanteigado bem claro */
   --foreground: #1f1b16; /* marrom muito escuro */
-  --brand: #2f7d4f;      /* verde folha (mercearia) */
-  --brand-dark: #20603b;
-  --accent: #d64a3a;     /* vermelho tomate */
-  --accent-dark: #b03426;
-  --butter: #f5d27a;     /* amarelo manteiga */
+  --brand: #c8362a;      /* vermelho da fachada */
+  --brand-dark: #9a2118; /* vermelho profundo */
+  --butter: #f4dc8a;     /* amarelo pastel (parte superior da fachada / toldos) */
+  --butter-soft: #fbeec0;
+  --accent: #2f7d4f;     /* verde folha — toque "fresco/natural" */
+  --accent-dark: #20603b;
   --surface: #ffffff;
   --muted: #6b5d4e;
 }
@@ -37,9 +38,9 @@ body {
 
 body {
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(47, 125, 79, 0.06) 0, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(214, 74, 58, 0.05) 0, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(245, 210, 122, 0.05) 0, transparent 50%);
+    radial-gradient(circle at 10% 20%, rgba(200, 54, 42, 0.06) 0, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(244, 220, 138, 0.18) 0, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(47, 125, 79, 0.04) 0, transparent 50%);
   background-attachment: fixed;
 }
 

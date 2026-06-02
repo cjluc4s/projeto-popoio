@@ -36,7 +36,7 @@ export function NavBar() {
             <span aria-hidden>🛒</span>
             <span className="hidden sm:inline">Carrinho</span>
             {count > 0 && (
-              <span className="inline-flex items-center justify-center bg-[var(--accent)] text-white text-xs font-bold rounded-full h-5 min-w-5 px-1 shadow">
+              <span className="inline-flex items-center justify-center bg-[var(--butter)] text-[var(--brand-dark)] text-xs font-bold rounded-full h-5 min-w-5 px-1 shadow">
                 {count}
               </span>
             )}

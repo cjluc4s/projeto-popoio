@@ -26,7 +26,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-10">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--brand-dark)] via-[var(--brand)] to-emerald-500 text-white shadow-lg">
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--brand-dark)] via-[var(--brand)] to-[#e8523e] text-white shadow-lg">
         <div className="absolute inset-0 opacity-20 pointer-events-none select-none text-[10rem] leading-none">
           <span className="absolute -top-6 -right-4">🧀</span>
           <span className="absolute bottom-0 left-2">🥛</span>

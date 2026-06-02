@@ -47,7 +47,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         )}
         {outOfStock && (
-          <span className="absolute top-2 right-2 bg-[var(--accent)] text-white text-[10px] font-bold uppercase rounded-full px-2 py-0.5 shadow">
+          <span className="absolute top-2 right-2 bg-[var(--brand-dark)] text-white text-[10px] font-bold uppercase rounded-full px-2 py-0.5 shadow">
             Esgotado
           </span>
         )}
