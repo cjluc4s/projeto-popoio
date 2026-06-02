@@ -43,7 +43,7 @@ export default function RootLayout({
                   Laticínios <span className="accent">Popoio</span>
                 </p>
                 <p className="text-white/70 mt-1">
-                  Frescor que vem direto da Mooca para sua mesa.
+                  Tradição na Mooca há mais de 45 anos.
                 </p>
               </div>
               <div>
