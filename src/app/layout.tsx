@@ -48,11 +48,20 @@ export default function RootLayout({
               </div>
               <div>
                 <p className="font-semibold mb-1">Endereço</p>
-                <p className="text-white/80">
-                  Rua Mad de Deus, 292 — Mooca
-                  <br />
-                  São Paulo / SP — 03119-000
-                </p>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Rua+Madre+de+Deus+292+Mooca+São+Paulo+SP"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/80 hover:text-[var(--butter)] underline-offset-2 hover:underline inline-flex items-start gap-1 transition-colors"
+                  title="Ver no Google Maps"
+                >
+                  <span aria-hidden>📍</span>
+                  <span>
+                    Rua Mad de Deus, 292 — Mooca
+                    <br />
+                    São Paulo / SP — 03119-000
+                  </span>
+                </a>
               </div>
               <div>
                 <p className="font-semibold mb-1">Pedidos</p>
