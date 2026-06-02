@@ -36,7 +36,7 @@ export default async function HomePage() {
             Direto da Mooca
           </span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight">
-            Frescor, qualidade e <span className="text-[var(--butter)]">tradição</span> na sua casa.
+            <span className="text-[var(--butter)]">Tradição</span> na Mooca há mais de 45 anos.
           </h1>
           <p className="mt-3 text-white/90 sm:text-lg max-w-xl">
             Laticínios, padaria e mercearia selecionados. Faça seu pedido em
