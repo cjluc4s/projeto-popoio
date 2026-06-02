@@ -42,6 +42,8 @@ export default function RegisterPage() {
     address: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptComms, setAcceptComms] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -68,6 +70,14 @@ export default function RegisterPage() {
     }
     if (form.confirm !== form.password) {
       setError("A confirmação da senha não confere.");
+      return;
+    }
+    if (!acceptTerms) {
+      setError("Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.");
+      return;
+    }
+    if (!acceptComms) {
+      setError("É necessário concordar em receber as confirmações de pedido para criar a conta.");
       return;
     }
     setLoading(true);
@@ -293,6 +303,43 @@ export default function RegisterPage() {
             </div>
           </details>
 
+          {/* Consentimentos */}
+          <div className="space-y-2 pt-1">
+            <label className="flex items-start gap-2 text-sm text-stone-700 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                required
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-stone-400 text-[var(--brand)] focus:ring-[var(--brand)]/40"
+              />
+              <span>
+                Li e aceito os{" "}
+                <Link href="/termos" target="_blank" className="text-[var(--brand-dark)] font-semibold hover:underline">
+                  Termos de Uso
+                </Link>{" "}
+                e a{" "}
+                <Link href="/privacidade" target="_blank" className="text-[var(--brand-dark)] font-semibold hover:underline">
+                  Política de Privacidade
+                </Link>
+                . <span className="text-red-600">*</span>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 text-sm text-stone-700 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                required
+                checked={acceptComms}
+                onChange={(e) => setAcceptComms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-stone-400 text-[var(--brand)] focus:ring-[var(--brand)]/40"
+              />
+              <span>
+                Concordo em receber confirmações dos meus pedidos por e-mail
+                e/ou WhatsApp. <span className="text-red-600">*</span>
+              </span>
+            </label>
+          </div>
+
           {error && (
             <div className="rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3">
               {error}
@@ -301,7 +348,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={loading || !allValid || confirmMismatch || !form.confirm}
+            disabled={loading || !allValid || confirmMismatch || !form.confirm || !acceptTerms || !acceptComms}
             className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)] disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg py-3 transition shadow-sm inline-flex items-center justify-center gap-2"
           >
             {loading ? (
@@ -315,8 +362,12 @@ export default function RegisterPage() {
           </button>
 
           <p className="text-xs text-stone-500 text-center">
-            Ao se cadastrar, você concorda em receber confirmações dos seus
-            pedidos por e-mail e/ou WhatsApp.
+            Seus dados são usados apenas para processar seus pedidos. Consulte
+            nossa{" "}
+            <Link href="/privacidade" className="underline hover:text-[var(--brand-dark)]">
+              Política de Privacidade
+            </Link>
+            .
           </p>
         </form>
       </section>

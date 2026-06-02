@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { NavBar } from "@/components/NavBar";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -73,8 +74,16 @@ export default function RootLayout({
                 </p>
               </div>
             </div>
-            <div className="bg-black/20 text-center text-xs text-white/70 py-2">
-              © {new Date().getFullYear()} Laticínios Popoio LTDA
+            <div className="bg-black/20 text-center text-xs text-white/70 py-3 px-4 flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1">
+              <span>© {new Date().getFullYear()} Laticínios Popoio LTDA</span>
+              <span className="hidden sm:inline opacity-50">•</span>
+              <Link href="/termos" className="hover:text-[var(--butter)] hover:underline underline-offset-2">
+                Termos de Uso
+              </Link>
+              <span className="hidden sm:inline opacity-50">•</span>
+              <Link href="/privacidade" className="hover:text-[var(--butter)] hover:underline underline-offset-2">
+                Política de Privacidade
+              </Link>
             </div>
           </footer>
         </Providers>
