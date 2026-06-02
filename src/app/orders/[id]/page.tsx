@@ -42,7 +42,7 @@ export default async function OrderDetailPage({
           <h1 className="text-xl font-bold">Pedido</h1>
           <p className="font-mono text-sm text-stone-500">#{order.id}</p>
         </div>
-        <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
+        <span className="text-xs bg-[var(--brand)]/15 text-[var(--brand-dark)] px-2 py-1 rounded">
           {statusLabel[order.status]}
         </span>
       </div>

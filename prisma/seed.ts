@@ -15,7 +15,7 @@ async function main() {
     create: {
       email: adminEmail,
       passwordHash,
-      name: "Admin Popóio",
+      name: "Admin Popoio",
       isAdmin: true,
     },
     update: { isAdmin: true, passwordHash },

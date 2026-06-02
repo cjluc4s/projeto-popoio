@@ -16,7 +16,7 @@ export default function CartPage() {
       {items.length === 0 ? (
         <div className="bg-white border rounded-lg p-8 text-center text-stone-500">
           Seu carrinho está vazio.{" "}
-          <Link href="/" className="text-emerald-700 underline">
+          <Link href="/" className="text-[var(--brand-dark)] underline">
             Ver produtos
           </Link>
         </div>
@@ -81,13 +81,13 @@ export default function CartPage() {
             </div>
             <Link
               href="/checkout"
-              className="block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md py-3"
+              className="block text-center bg-[var(--brand)] hover:bg-[var(--brand-dark)] text-white font-medium rounded-md py-3"
             >
               Finalizar pedido
             </Link>
             <Link
               href="/"
-              className="block text-center text-emerald-700 text-sm hover:underline"
+              className="block text-center text-[var(--brand-dark)] text-sm hover:underline"
             >
               Continuar comprando
             </Link>

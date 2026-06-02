@@ -36,7 +36,7 @@ export default async function OrdersPage() {
                 <div>
                   <Link
                     href={`/orders/${o.id}`}
-                    className="font-mono text-sm text-emerald-700 hover:underline"
+                    className="font-mono text-sm text-[var(--brand-dark)] hover:underline"
                   >
                     #{o.id.slice(-8)}
                   </Link>

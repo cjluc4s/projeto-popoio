@@ -80,7 +80,7 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
         <h1 className="text-2xl font-bold">Produtos</h1>
         <button
           onClick={newProduct}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-sm font-medium"
+          className="bg-[var(--brand)] hover:bg-[var(--brand-dark)] text-white px-3 py-2 rounded-md text-sm font-medium"
         >
           + Novo
         </button>
@@ -114,7 +114,7 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
                 <td className="p-2 text-right space-x-2 whitespace-nowrap">
                   <button
                     onClick={() => setEditing(p)}
-                    className="text-emerald-700 hover:underline"
+                    className="text-[var(--brand-dark)] hover:underline"
                   >
                     Editar
                   </button>
@@ -223,7 +223,7 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
               <button
                 onClick={save}
                 disabled={saving}
-                className="px-3 py-2 rounded bg-emerald-600 text-white disabled:opacity-60"
+                className="px-3 py-2 rounded bg-[var(--brand)] text-white disabled:opacity-60"
               >
                 {saving ? "Salvando..." : "Salvar"}
               </button>

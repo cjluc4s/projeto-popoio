@@ -87,14 +87,14 @@ export default function RegisterPage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           disabled={loading}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-medium rounded-md py-2"
+          className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)] disabled:opacity-60 text-white font-medium rounded-md py-2"
         >
           {loading ? "Cadastrando..." : "Cadastrar"}
         </button>
       </form>
       <p className="text-sm mt-4 text-center">
         Já tem conta?{" "}
-        <Link href="/login" className="text-emerald-700 underline">
+        <Link href="/login" className="text-[var(--brand-dark)] underline">
           Entrar
         </Link>
       </p>

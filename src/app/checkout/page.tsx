@@ -25,7 +25,7 @@ export default function CheckoutPage() {
         <p>Você precisa entrar para finalizar o pedido.</p>
         <Link
           href={`/login?callbackUrl=${encodeURIComponent("/checkout")}`}
-          className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-md"
+          className="inline-block bg-[var(--brand)] text-white px-4 py-2 rounded-md"
         >
           Entrar / Cadastrar
         </Link>
@@ -37,7 +37,7 @@ export default function CheckoutPage() {
     return (
       <p>
         Seu carrinho está vazio.{" "}
-        <Link href="/" className="underline text-emerald-700">
+        <Link href="/" className="underline text-[var(--brand-dark)]">
           Ver produtos
         </Link>
       </p>
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
       <button
         onClick={finalize}
         disabled={loading}
-        className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-medium rounded-md py-3"
+        className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)] disabled:opacity-60 text-white font-medium rounded-md py-3"
       >
         {loading ? "Enviando..." : "Confirmar e enviar via WhatsApp"}
       </button>

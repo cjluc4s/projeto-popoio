@@ -1,6 +1,6 @@
-# 🥛 Laticínios Popóio — Mercearia Online
+# 🥛 Laticínios Popoio — Mercearia Online
 
-Sistema web para a mercearia **Laticínios Popóio LTDA** (Rua Mad de Deus, 292 - Mooca, São Paulo - SP), com catálogo online, carrinho, checkout via WhatsApp e painel administrativo.
+Sistema web para a mercearia **Laticínios Popoio LTDA** (Rua Mad de Deus, 292 - Mooca, São Paulo - SP), com catálogo online, carrinho, checkout via WhatsApp e painel administrativo.
 
 ## Stack
 

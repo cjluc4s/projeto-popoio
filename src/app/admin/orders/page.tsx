@@ -39,7 +39,7 @@ export default async function AdminOrdersPage() {
                 <td className="p-2 font-mono">
                   <Link
                     href={`/admin/orders/${o.id}`}
-                    className="text-emerald-700 hover:underline"
+                    className="text-[var(--brand-dark)] hover:underline"
                   >
                     #{o.id.slice(-8)}
                   </Link>
