@@ -16,9 +16,10 @@ const createSchema = z.object({
   priceCents: z.number().int().nonnegative(),
   description: z.string().optional(),
   category: z.string().optional(),
+  barcode: z.string().trim().min(1).optional().or(z.literal("")),
   stockQty: z.number().int().nonnegative().default(0),
   available: z.boolean().default(true),
-  imageUrl: z.string().url().optional().or(z.literal("")),
+  imageUrl: z.string().min(1).optional().or(z.literal("")),
 });
 
 export async function POST(req: Request) {
@@ -34,7 +35,18 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
-  const data = { ...parsed.data, imageUrl: parsed.data.imageUrl || null };
-  const product = await prisma.product.create({ data });
-  return NextResponse.json(product, { status: 201 });
+  const data = {
+    ...parsed.data,
+    imageUrl: parsed.data.imageUrl || null,
+    barcode: parsed.data.barcode || null,
+  };
+  try {
+    const product = await prisma.product.create({ data });
+    return NextResponse.json(product, { status: 201 });
+  } catch (e: unknown) {
+    const msg = (e as { code?: string })?.code === "P2002"
+      ? "Já existe um produto com esse código de barras."
+      : "Erro ao salvar o produto.";
+    return NextResponse.json({ error: msg }, { status: 409 });
+  }
 }

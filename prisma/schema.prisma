@@ -34,6 +34,7 @@ model Product {
   priceCents  Int
   description String?
   category    String?
+  barcode     String?  @unique
   stockQty    Int      @default(0)
   available   Boolean  @default(true)
   imageUrl    String?
