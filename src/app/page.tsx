@@ -40,8 +40,9 @@ export default async function HomePage() {
             <span className="text-[var(--butter)]">Tradição</span> na Mooca há mais de 45 anos.
           </h1>
           <p className="mt-3 text-white/90 sm:text-lg max-w-xl">
-            Laticínios, padaria e mercearia selecionados. Faça seu pedido em
-            minutos e receba a confirmação direto pelo WhatsApp.
+            Laticínios fresquinhos e produtos de mercearia selecionados com
+            carinho. Faça seu pedido em minutos e receba a confirmação direto
+            pelo WhatsApp.
           </p>
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             <a
@@ -66,7 +67,7 @@ export default async function HomePage() {
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
         {[
           { icon: "🥛", label: "Laticínios frescos" },
-          { icon: "🥖", label: "Padaria do dia" },
+          { icon: "�", label: "Queijos selecionados" },
           { icon: "🥬", label: "Hortifruti" },
           { icon: "📱", label: "Pedido via WhatsApp" },
         ].map((b) => (
