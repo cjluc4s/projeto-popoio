@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { ProductCard } from "@/components/ProductCard";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -49,9 +50,14 @@ export default async function HomePage() {
             >
               Ver produtos
             </a>
-            <span className="bg-white/15 backdrop-blur px-4 py-2 rounded-full">
+            <Link
+              href="/entrega"
+              className="bg-white/15 hover:bg-white/25 backdrop-blur px-4 py-2 rounded-full transition inline-flex items-center gap-1.5"
+              title="Verifique se entregamos no seu endereço"
+            >
               🚚 Entregamos na região da Mooca e proximidades
-            </span>
+              <span aria-hidden>→</span>
+            </Link>
           </div>
         </div>
       </section>
