@@ -11,7 +11,7 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  let body: { cep?: string; address?: string };
+  let body: { cep?: string; number?: string; complement?: string };
   try {
     body = await req.json();
   } catch {
@@ -19,69 +19,70 @@ export async function POST(req: Request) {
   }
 
   const cepInput = (body.cep || "").trim();
-  const addressInput = (body.address || "").trim();
+  const number = (body.number || "").trim();
+  const complement = (body.complement || "").trim();
 
-  if (!cepInput && !addressInput) {
+  if (!cepInput) {
     return NextResponse.json(
-      { error: "Informe um CEP ou endereço para verificarmos." },
+      { error: "Informe um CEP para verificarmos." },
+      { status: 400 },
+    );
+  }
+  if (!normalizeCep(cepInput)) {
+    return NextResponse.json(
+      { error: "CEP inválido. Use o formato 00000-000." },
+      { status: 400 },
+    );
+  }
+  if (!number) {
+    return NextResponse.json(
+      { error: "Informe o número do endereço." },
       { status: 400 },
     );
   }
 
-  // 1) Caminho preferencial: CEP
-  let coords: { lat: number; lng: number } | undefined;
-  let addressLabel = "";
-  let cepFmt: string | undefined;
-
-  if (cepInput) {
-    if (!normalizeCep(cepInput)) {
-      return NextResponse.json(
-        { error: "CEP inválido. Use o formato 00000-000." },
-        { status: 400 },
-      );
-    }
-    const lookup = await lookupCep(cepInput);
-    if (!lookup) {
-      return NextResponse.json(
-        { error: "Não encontramos esse CEP. Confira o número e tente de novo." },
-        { status: 404 },
-      );
-    }
-    cepFmt = lookup.cep;
-    addressLabel = [
-      lookup.street,
-      lookup.neighborhood,
-      lookup.city && lookup.state ? `${lookup.city} / ${lookup.state}` : lookup.city || lookup.state,
-    ]
-      .filter(Boolean)
-      .join(" — ");
-    coords = lookup.coords;
-
-    // Se não temos coords pelo CEP, complementa com endereço informado pelo usuário (se houver)
-    if (!coords) {
-      const composed = [
-        addressInput,
-        lookup.street,
-        lookup.neighborhood,
-        lookup.city,
-        lookup.state,
-        "Brasil",
-      ]
-        .filter(Boolean)
-        .join(", ");
-      coords = (await geocodeAddress(composed)) || undefined;
-    }
-  } else if (addressInput) {
-    // 2) Sem CEP — só endereço livre
-    coords = (await geocodeAddress(`${addressInput}, Brasil`)) || undefined;
-    addressLabel = addressInput;
+  const lookup = await lookupCep(cepInput);
+  if (!lookup) {
+    return NextResponse.json(
+      { error: "Não encontramos esse CEP. Confira o número e tente de novo." },
+      { status: 404 },
+    );
   }
+
+  const streetWithNumber = lookup.street
+    ? `${lookup.street}, ${number}${complement ? ` — ${complement}` : ""}`
+    : `Número ${number}${complement ? ` — ${complement}` : ""}`;
+
+  const addressLabel = [
+    streetWithNumber,
+    lookup.neighborhood,
+    lookup.city && lookup.state
+      ? `${lookup.city} / ${lookup.state}`
+      : lookup.city || lookup.state,
+  ]
+    .filter(Boolean)
+    .join(" — ");
+
+  // Geocodifica com número (mais preciso); fallback para coords do CEP.
+  const geocodeQuery = [
+    lookup.street ? `${lookup.street}, ${number}` : undefined,
+    lookup.neighborhood,
+    lookup.city,
+    lookup.state,
+    lookup.cep,
+    "Brasil",
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  let coords = await geocodeAddress(geocodeQuery);
+  if (!coords && lookup.coords) coords = lookup.coords;
 
   if (!coords) {
     return NextResponse.json(
       {
         error:
-          "Não conseguimos localizar esse endereço no mapa. Tente informar o CEP ou um endereço mais completo.",
+          "Não conseguimos localizar esse endereço no mapa. Confira o CEP e o número e tente novamente.",
       },
       { status: 422 },
     );
@@ -95,7 +96,7 @@ export async function POST(req: Request) {
     distanceKm: Math.round(distanceKm * 100) / 100,
     radiusKm: DELIVERY_RADIUS_KM,
     address: addressLabel || undefined,
-    cep: cepFmt,
+    cep: lookup.cep,
     store: STORE_LOCATION,
     target: coords,
   });
