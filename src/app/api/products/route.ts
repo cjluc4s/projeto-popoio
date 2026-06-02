@@ -14,12 +14,12 @@ export async function GET() {
 const createSchema = z.object({
   name: z.string().min(1),
   priceCents: z.number().int().nonnegative(),
-  description: z.string().optional(),
-  category: z.string().optional(),
-  barcode: z.string().trim().min(1).optional().or(z.literal("")),
+  description: z.string().nullish(),
+  category: z.string().nullish(),
+  barcode: z.string().nullish(),
   stockQty: z.number().int().nonnegative().default(0),
   available: z.boolean().default(true),
-  imageUrl: z.string().min(1).optional().or(z.literal("")),
+  imageUrl: z.string().nullish(),
 });
 
 export async function POST(req: Request) {
@@ -37,16 +37,26 @@ export async function POST(req: Request) {
   }
   const data = {
     ...parsed.data,
-    imageUrl: parsed.data.imageUrl || null,
-    barcode: parsed.data.barcode || null,
+    description: parsed.data.description?.trim() || null,
+    category: parsed.data.category?.trim() || null,
+    imageUrl: parsed.data.imageUrl?.trim() || null,
+    barcode: parsed.data.barcode?.trim() || null,
   };
   try {
     const product = await prisma.product.create({ data });
     return NextResponse.json(product, { status: 201 });
   } catch (e: unknown) {
-    const msg = (e as { code?: string })?.code === "P2002"
-      ? "Já existe um produto com esse código de barras."
-      : "Erro ao salvar o produto.";
-    return NextResponse.json({ error: msg }, { status: 409 });
+    const code = (e as { code?: string })?.code;
+    if (code === "P2002") {
+      return NextResponse.json(
+        { error: "Já existe um produto com esse código de barras." },
+        { status: 409 },
+      );
+    }
+    console.error("[POST /api/products] error:", e);
+    return NextResponse.json(
+      { error: (e as Error)?.message ?? "Erro ao salvar o produto." },
+      { status: 500 },
+    );
   }
 }
