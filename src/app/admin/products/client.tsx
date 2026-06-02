@@ -1,9 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { formatBRL } from "@/lib/format";
+
+type SortKey =
+  | "createdDesc"
+  | "createdAsc"
+  | "nameAsc"
+  | "nameDesc"
+  | "priceAsc"
+  | "priceDesc";
+
+type StatusFilter = "all" | "available" | "unavailable";
 
 interface Product {
   id: string;
@@ -33,7 +43,13 @@ function centsToBRLInput(cents: number) {
   });
 }
 
-export function AdminProductsClient({ initial }: { initial: Product[] }) {
+export function AdminProductsClient({
+  initial,
+  categories,
+}: {
+  initial: Product[];
+  categories: string[];
+}) {
   const router = useRouter();
   const [items, setItems] = useState(initial);
   const [editing, setEditing] = useState<Draft | null>(null);
@@ -43,6 +59,69 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Filtros / ordenação
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sort, setSort] = useState<SortKey>("createdDesc");
+
+  // Lista de categorias disponíveis para filtro: cadastradas + as que aparecem em produtos
+  const allCategories = useMemo(() => {
+    const set = new Set<string>(categories);
+    for (const p of items) if (p.category) set.add(p.category);
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [categories, items]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = items.filter((p) => {
+      if (categoryFilter === "__none__" && p.category) return false;
+      if (
+        categoryFilter !== "all" &&
+        categoryFilter !== "__none__" &&
+        p.category !== categoryFilter
+      )
+        return false;
+      if (statusFilter === "available" && !p.available) return false;
+      if (statusFilter === "unavailable" && p.available) return false;
+      if (q) {
+        const hay = `${p.name} ${p.category ?? ""} ${p.barcode ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const cmpName = (a: Product, b: Product) =>
+      a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" });
+    switch (sort) {
+      case "nameAsc":
+        list = [...list].sort(cmpName);
+        break;
+      case "nameDesc":
+        list = [...list].sort((a, b) => -cmpName(a, b));
+        break;
+      case "priceAsc":
+        list = [...list].sort((a, b) => a.priceCents - b.priceCents);
+        break;
+      case "priceDesc":
+        list = [...list].sort((a, b) => b.priceCents - a.priceCents);
+        break;
+      case "createdAsc":
+        list = [...list].reverse();
+        break;
+      case "createdDesc":
+      default:
+        break;
+    }
+    return list;
+  }, [items, search, categoryFilter, statusFilter, sort]);
+
+  function clearFilters() {
+    setSearch("");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+    setSort("createdDesc");
+  }
 
   function open(prod?: Product) {
     if (prod) {
@@ -164,7 +243,7 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-2 flex-wrap">
         <h1 className="text-2xl font-bold">Produtos</h1>
         <button
           onClick={() => open()}
@@ -172,6 +251,82 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
         >
           + Novo produto
         </button>
+      </div>
+
+      {/* Barra de filtros */}
+      <div className="bg-white border rounded-lg p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
+        <div className="lg:col-span-2">
+          <label className="block text-xs font-semibold text-stone-600 mb-1">
+            Buscar
+          </label>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Nome, categoria ou código de barras"
+            className="w-full border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none rounded-md px-3 py-2"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-1">
+            Categoria
+          </label>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="w-full border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none rounded-md px-3 py-2 bg-white"
+          >
+            <option value="all">Todas</option>
+            <option value="__none__">— Sem categoria</option>
+            {allCategories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-1">
+            Status
+          </label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+            className="w-full border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none rounded-md px-3 py-2 bg-white"
+          >
+            <option value="all">Todos</option>
+            <option value="available">Ativos</option>
+            <option value="unavailable">Sem estoque</option>
+          </select>
+        </div>
+        <div className="lg:col-span-3">
+          <label className="block text-xs font-semibold text-stone-600 mb-1">
+            Ordenar por
+          </label>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            className="w-full border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none rounded-md px-3 py-2 bg-white"
+          >
+            <option value="createdDesc">Cadastro mais recente</option>
+            <option value="createdAsc">Cadastro mais antigo</option>
+            <option value="nameAsc">Nome (A → Z)</option>
+            <option value="nameDesc">Nome (Z → A)</option>
+            <option value="priceAsc">Preço (menor → maior)</option>
+            <option value="priceDesc">Preço (maior → menor)</option>
+          </select>
+        </div>
+        <div className="flex items-end">
+          <button
+            onClick={clearFilters}
+            className="w-full px-3 py-2 rounded-md border border-stone-300 hover:bg-stone-50 text-sm"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+
+      <div className="text-xs text-stone-500">
+        Mostrando <strong>{filtered.length}</strong> de {items.length} produto(s)
       </div>
 
       <div className="bg-white border rounded-lg overflow-hidden">
@@ -187,7 +342,7 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
             </tr>
           </thead>
           <tbody>
-            {items.map((p) => (
+            {filtered.map((p) => (
               <tr key={p.id} className="border-t align-middle">
                 <td className="p-2">
                   <div className="flex items-center gap-2">
@@ -207,7 +362,9 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
                     <span className="font-medium">{p.name}</span>
                   </div>
                 </td>
-                <td className="p-2 hidden sm:table-cell">{p.category ?? "-"}</td>
+                <td className="p-2 hidden sm:table-cell">
+                  {p.category ?? <span className="text-stone-400">—</span>}
+                </td>
                 <td className="p-2 hidden md:table-cell font-mono text-xs">
                   {p.barcode ?? "-"}
                 </td>
@@ -241,10 +398,12 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
                 </td>
               </tr>
             ))}
-            {items.length === 0 && (
+            {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-stone-500">
-                  Nenhum produto cadastrado.
+                  {items.length === 0
+                    ? "Nenhum produto cadastrado."
+                    : "Nenhum produto encontrado com os filtros atuais."}
                 </td>
               </tr>
             )}
@@ -348,12 +507,37 @@ export function AdminProductsClient({ initial }: { initial: Product[] }) {
                 <label className="block text-sm font-semibold text-stone-700 mb-1">
                   Categoria
                 </label>
-                <input
-                  placeholder="Ex.: Laticínios"
+                <select
                   value={editing.category ?? ""}
-                  onChange={(e) => setEditing({ ...editing, category: e.target.value })}
-                  className="w-full border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none rounded-md px-3 py-2"
-                />
+                  onChange={(e) =>
+                    setEditing({ ...editing, category: e.target.value || null })
+                  }
+                  className="w-full border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none rounded-md px-3 py-2 bg-white"
+                >
+                  <option value="">— Sem categoria</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                  {editing.category &&
+                    !categories.includes(editing.category) && (
+                      <option value={editing.category}>
+                        {editing.category} (não cadastrada)
+                      </option>
+                    )}
+                </select>
+                {categories.length === 0 && (
+                  <p className="text-xs text-amber-700 mt-1">
+                    Nenhuma categoria cadastrada.{" "}
+                    <a
+                      href="/admin/categories"
+                      className="underline font-semibold"
+                    >
+                      Cadastrar agora
+                    </a>
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-1">
