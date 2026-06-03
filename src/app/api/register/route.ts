@@ -13,8 +13,8 @@ const schema = z.object({
     .regex(/[A-Z]/, "A senha deve conter uma letra maiúscula.")
     .regex(/\d/, "A senha deve conter um número.")
     .regex(/[^A-Za-z0-9]/, "A senha deve conter um caractere especial."),
-  phone: z.string().optional(),
-  address: z.string().optional(),
+  phone: z.string().trim().min(8, "Informe seu telefone ou WhatsApp."),
+  address: z.string().trim().min(5, "Informe seu endereço."),
 });
 
 export async function POST(req: Request) {

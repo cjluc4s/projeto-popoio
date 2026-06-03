@@ -64,6 +64,14 @@ export default function RegisterPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!form.phone.trim()) {
+      setError("Informe seu telefone ou WhatsApp.");
+      return;
+    }
+    if (!form.address.trim()) {
+      setError("Informe seu endereço.");
+      return;
+    }
     if (!allValid) {
       setError("A senha não atende aos requisitos mínimos.");
       return;
@@ -89,8 +97,8 @@ export default function RegisterPage() {
           name: form.name,
           email: form.email,
           password: form.password,
-          phone: form.phone || undefined,
-          address: form.address || undefined,
+          phone: form.phone.trim(),
+          address: form.address.trim(),
         }),
       });
       if (!res.ok) {
@@ -266,42 +274,39 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* Telefone + Endereço (opcionais) */}
-          <details className="rounded-lg border border-stone-200 bg-stone-50">
-            <summary className="cursor-pointer px-4 py-2 text-sm font-medium text-stone-700 select-none">
-              Adicionar telefone e endereço (opcional)
-            </summary>
-            <div className="px-4 pb-4 pt-2 space-y-3">
-              <div>
-                <label htmlFor="phone" className="block text-xs font-semibold text-stone-600 mb-1">
-                  Telefone / WhatsApp
-                </label>
-                <input
-                  id="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="(11) 91234-5678"
-                  value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none px-3 py-2 text-sm bg-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="address" className="block text-xs font-semibold text-stone-600 mb-1">
-                  Endereço de entrega
-                </label>
-                <input
-                  id="address"
-                  type="text"
-                  autoComplete="street-address"
-                  placeholder="Rua, número, bairro"
-                  value={form.address}
-                  onChange={(e) => set("address", e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none px-3 py-2 text-sm bg-white"
-                />
-              </div>
+          {/* Telefone + Endereço */}
+          <div className="grid gap-3 rounded-lg border border-stone-200 bg-stone-50 p-4">
+            <div>
+              <label htmlFor="phone" className="block text-sm font-semibold text-stone-700 mb-1">
+                Telefone / WhatsApp <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="phone"
+                required
+                type="tel"
+                autoComplete="tel"
+                placeholder="(11) 91234-5678"
+                value={form.phone}
+                onChange={(e) => set("phone", e.target.value)}
+                className="w-full rounded-lg border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none px-3 py-2.5 text-base bg-white"
+              />
             </div>
-          </details>
+            <div>
+              <label htmlFor="address" className="block text-sm font-semibold text-stone-700 mb-1">
+                Endereço <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="address"
+                required
+                type="text"
+                autoComplete="street-address"
+                placeholder="Rua, número, bairro"
+                value={form.address}
+                onChange={(e) => set("address", e.target.value)}
+                className="w-full rounded-lg border border-stone-300 focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/30 outline-none px-3 py-2.5 text-base bg-white"
+              />
+            </div>
+          </div>
 
           {/* Consentimentos */}
           <div className="space-y-2 pt-1">
@@ -348,7 +353,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={loading || !allValid || confirmMismatch || !form.confirm || !acceptTerms || !acceptComms}
+            disabled={loading || !allValid || confirmMismatch || !form.confirm || !form.phone.trim() || !form.address.trim() || !acceptTerms || !acceptComms}
             className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)] disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg py-3 transition shadow-sm inline-flex items-center justify-center gap-2"
           >
             {loading ? (
