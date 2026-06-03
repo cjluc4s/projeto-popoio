@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
-const schema = z.object({ category: z.string().min(1) });
+const schema = z.object({ categoryId: z.string().min(1) });
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -16,8 +16,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
   const r = await prisma.product.updateMany({
-    where: { category: parsed.data.category },
-    data: { category: null },
+    where: { categoryId: parsed.data.categoryId },
+    data: { categoryId: null },
   });
   return NextResponse.json({ ok: true, count: r.count });
 }

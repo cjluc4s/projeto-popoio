@@ -3,6 +3,23 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
+function normalizeCategoryName(value: string | null | undefined) {
+  return value?.trim() || null;
+}
+
+async function resolveCategoryIdByName(name: string | null) {
+  if (!name) return null;
+  const category = await prisma.category.findUnique({ where: { name } });
+  return category?.id ?? null;
+}
+
+function toProductResponse<T extends { category: { name: string } | null }>(product: T) {
+  return {
+    ...product,
+    category: product.category?.name ?? null,
+  };
+}
+
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
   priceCents: z.number().int().nonnegative().optional(),
@@ -29,11 +46,20 @@ export async function PATCH(
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
   const data = { ...parsed.data };
+  const categoryName = normalizeCategoryName(parsed.data.category);
   if (data.barcode === "") data.barcode = null;
   if (data.imageUrl === "") data.imageUrl = null;
+  delete data.category;
+  if (parsed.data.category !== undefined) {
+    data.categoryId = await resolveCategoryIdByName(categoryName);
+  }
   try {
-    const product = await prisma.product.update({ where: { id }, data });
-    return NextResponse.json(product);
+    const product = await prisma.product.update({
+      where: { id },
+      data,
+      include: { category: { select: { name: true } } },
+    });
+    return NextResponse.json(toProductResponse(product));
   } catch (e: unknown) {
     const msg = (e as { code?: string })?.code === "P2002"
       ? "Já existe um produto com esse código de barras."

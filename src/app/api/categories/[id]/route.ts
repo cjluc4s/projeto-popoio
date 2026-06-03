@@ -23,8 +23,8 @@ export async function PATCH(
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
   try {
-    const before = await prisma.category.findUnique({ where: { id } });
-    if (!before) {
+    const exists = await prisma.category.findUnique({ where: { id } });
+    if (!exists) {
       return NextResponse.json(
         { error: "Categoria não encontrada." },
         { status: 404 },
@@ -34,13 +34,6 @@ export async function PATCH(
       where: { id },
       data: parsed.data,
     });
-    // Se o nome mudou, propaga em todos os produtos com o nome antigo
-    if (parsed.data.name && parsed.data.name !== before.name) {
-      await prisma.product.updateMany({
-        where: { category: before.name },
-        data: { category: parsed.data.name },
-      });
-    }
     return NextResponse.json(updated);
   } catch (e: unknown) {
     if ((e as { code?: string })?.code === "P2002") {
@@ -75,7 +68,7 @@ export async function DELETE(
       { status: 404 },
     );
   }
-  const count = await prisma.product.count({ where: { category: cat.name } });
+  const count = await prisma.product.count({ where: { categoryId: id } });
   if (count > 0 && action !== "clear" && action !== "keep") {
     return NextResponse.json(
       {
@@ -88,8 +81,8 @@ export async function DELETE(
   }
   if (action === "clear" && count > 0) {
     await prisma.product.updateMany({
-      where: { category: cat.name },
-      data: { category: null },
+      where: { categoryId: id },
+      data: { categoryId: null },
     });
   }
   await prisma.category.delete({ where: { id } });

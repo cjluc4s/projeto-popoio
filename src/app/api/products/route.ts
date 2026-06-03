@@ -3,12 +3,31 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
+function normalizeCategoryName(value: string | null | undefined) {
+  const name = value?.trim() || null;
+  return name;
+}
+
+async function resolveCategoryIdByName(name: string | null) {
+  if (!name) return null;
+  const category = await prisma.category.findUnique({ where: { name } });
+  return category?.id ?? null;
+}
+
+function toProductResponse<T extends { category: { name: string } | null }>(product: T) {
+  return {
+    ...product,
+    category: product.category?.name ?? null,
+  };
+}
+
 export async function GET() {
   const products = await prisma.product.findMany({
     where: { available: true },
-    orderBy: { name: "asc" },
+    include: { category: { select: { name: true } } },
+    orderBy: [{ category: { name: "asc" } }, { name: "asc" }],
   });
-  return NextResponse.json(products);
+  return NextResponse.json(products.map(toProductResponse));
 }
 
 const createSchema = z.object({
@@ -35,16 +54,24 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+  const categoryName = normalizeCategoryName(parsed.data.category);
+  const categoryId = await resolveCategoryIdByName(categoryName);
   const data = {
-    ...parsed.data,
+    name: parsed.data.name,
+    priceCents: parsed.data.priceCents,
+    stockQty: parsed.data.stockQty,
+    available: parsed.data.available,
     description: parsed.data.description?.trim() || null,
-    category: parsed.data.category?.trim() || null,
+    categoryId,
     imageUrl: parsed.data.imageUrl?.trim() || null,
     barcode: parsed.data.barcode?.trim() || null,
   };
   try {
-    const product = await prisma.product.create({ data });
-    return NextResponse.json(product, { status: 201 });
+    const product = await prisma.product.create({
+      data,
+      include: { category: { select: { name: true } } },
+    });
+    return NextResponse.json(toProductResponse(product), { status: 201 });
   } catch (e: unknown) {
     const code = (e as { code?: string })?.code;
     if (code === "P2002") {

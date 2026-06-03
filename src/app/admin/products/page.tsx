@@ -5,14 +5,20 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage() {
   const [products, categories] = await Promise.all([
-    prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.product.findMany({
+      include: { category: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
     prisma.category.findMany({
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     }),
   ]);
   return (
     <AdminProductsClient
-      initial={products}
+      initial={products.map((p) => ({
+        ...p,
+        category: p.category?.name ?? null,
+      }))}
       categories={categories.map((c) => c.name)}
     />
   );

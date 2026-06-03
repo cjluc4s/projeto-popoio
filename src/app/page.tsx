@@ -5,11 +5,16 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  let products: Awaited<ReturnType<typeof prisma.product.findMany>> = [];
+  let products: Array<
+    Awaited<ReturnType<typeof prisma.product.findMany>>[number] & {
+      category: { name: string } | null;
+    }
+  > = [];
   try {
     products = await prisma.product.findMany({
       where: { available: true },
-      orderBy: [{ category: "asc" }, { name: "asc" }],
+      include: { category: { select: { name: true } } },
+      orderBy: [{ category: { name: "asc" } }, { name: "asc" }],
     });
   } catch {
     // banco ainda não configurado
@@ -17,7 +22,7 @@ export default async function HomePage() {
 
   const byCategory = products.reduce<Record<string, typeof products>>(
     (acc, p) => {
-      const key = p.category ?? "Outros";
+      const key = p.category?.name ?? "Outros";
       (acc[key] ||= []).push(p);
       return acc;
     },
@@ -109,7 +114,13 @@ export default async function HomePage() {
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {list.map((p) => (
-                  <ProductCard key={p.id} product={p} />
+                  <ProductCard
+                    key={p.id}
+                    product={{
+                      ...p,
+                      category: p.category?.name ?? null,
+                    }}
+                  />
                 ))}
               </div>
             </div>
