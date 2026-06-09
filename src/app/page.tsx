@@ -52,7 +52,7 @@ export default async function HomePage() {
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             <a
               href="#catalogo"
-              className="bg-[var(--butter)] text-[var(--brand-dark)] font-semibold px-4 py-2 rounded-full hover:brightness-95 shadow"
+              className="w-full sm:w-auto sm:max-w-none max-w-xs text-center bg-[var(--butter)] text-[var(--brand-dark)] font-semibold px-4 py-2 rounded-full hover:brightness-95 shadow"
             >
               Ver produtos
             </a>
