@@ -12,7 +12,7 @@ type Rule = {
 };
 
 const PASSWORD_RULES: Rule[] = [
-  { key: "len", label: "Pelo menos 7 caracteres", test: (s) => s.length >= 7 },
+  { key: "len", label: "Pelo menos 8 caracteres", test: (s) => s.length >= 8 },
   { key: "lower", label: "Uma letra minúscula (a-z)", test: (s) => /[a-z]/.test(s) },
   { key: "upper", label: "Uma letra maiúscula (A-Z)", test: (s) => /[A-Z]/.test(s) },
   { key: "num", label: "Um número (0-9)", test: (s) => /\d/.test(s) },

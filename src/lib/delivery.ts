@@ -7,8 +7,29 @@ export const STORE_LOCATION = {
 
 // Raio de entrega em quilômetros
 export const DELIVERY_RADIUS_KM = 5;
+export const DELIVERY_BASE_FEE_CENTS = 700;
+export const DELIVERY_EXTRA_PER_KM_CENTS = 180;
+export const DELIVERY_BASE_DISTANCE_KM = 2;
 
 export type Coords = { lat: number; lng: number };
+
+export type DeliveryInput = {
+  cep: string;
+  number: string;
+  complement?: string;
+};
+
+export type DeliveryAssessment = {
+  ok: boolean;
+  distanceKm: number;
+  radiusKm: number;
+  address?: string;
+  cep: string;
+  store: { lat: number; lng: number; address: string };
+  target: { lat: number; lng: number };
+  feeCents: number;
+  windowLabel: string;
+};
 
 /** Distância Haversine em km entre dois pontos (lat/lng em graus). */
 export function haversineKm(a: Coords, b: Coords): number {
@@ -133,4 +154,106 @@ export async function geocodeAddress(query: string): Promise<Coords | null> {
   } catch {
     return null;
   }
+}
+
+export function computeDeliveryFeeCents(distanceKm: number): number {
+  const extraKm = Math.max(0, distanceKm - DELIVERY_BASE_DISTANCE_KM);
+  return DELIVERY_BASE_FEE_CENTS + Math.ceil(extraKm) * DELIVERY_EXTRA_PER_KM_CENTS;
+}
+
+export function buildDeliveryWindowLabel(now = new Date()): string {
+  const current = new Date(now);
+  const hour = current.getHours();
+
+  if (hour >= 9 && hour < 19) {
+    const start = new Date(current.getTime() + 60 * 60 * 1000);
+    const end = new Date(current.getTime() + 120 * 60 * 1000);
+    return `Hoje entre ${start.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} e ${end.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  }
+
+  const nextDay = new Date(current);
+  nextDay.setDate(nextDay.getDate() + 1);
+  return `Amanhã entre 09:00 e 12:00 (${nextDay.toLocaleDateString("pt-BR")})`;
+}
+
+export async function assessDelivery(input: DeliveryInput): Promise<
+  { ok: false; status: number; error: string } | { ok: true; data: DeliveryAssessment }
+> {
+  const cepInput = (input.cep || "").trim();
+  const number = (input.number || "").trim();
+  const complement = (input.complement || "").trim();
+
+  if (!cepInput) {
+    return { ok: false, status: 400, error: "Informe um CEP para verificarmos." };
+  }
+  const normalizedCep = normalizeCep(cepInput);
+  if (!normalizedCep) {
+    return { ok: false, status: 400, error: "CEP inválido. Use o formato 00000-000." };
+  }
+  if (!number) {
+    return { ok: false, status: 400, error: "Informe o número do endereço." };
+  }
+
+  const lookup = await lookupCep(normalizedCep);
+  if (!lookup) {
+    return {
+      ok: false,
+      status: 404,
+      error: "Não encontramos esse CEP. Confira o número e tente de novo.",
+    };
+  }
+
+  const streetWithNumber = lookup.street
+    ? `${lookup.street}, ${number}${complement ? ` — ${complement}` : ""}`
+    : `Número ${number}${complement ? ` — ${complement}` : ""}`;
+
+  const addressLabel = [
+    streetWithNumber,
+    lookup.neighborhood,
+    lookup.city && lookup.state ? `${lookup.city} / ${lookup.state}` : lookup.city || lookup.state,
+  ]
+    .filter(Boolean)
+    .join(" — ");
+
+  const geocodeQuery = [
+    lookup.street ? `${lookup.street}, ${number}` : undefined,
+    lookup.neighborhood,
+    lookup.city,
+    lookup.state,
+    lookup.cep,
+    "Brasil",
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  let coords = await geocodeAddress(geocodeQuery);
+  if (!coords && lookup.coords) coords = lookup.coords;
+
+  if (!coords) {
+    return {
+      ok: false,
+      status: 422,
+      error:
+        "Não conseguimos localizar esse endereço no mapa. Confira o CEP e o número e tente novamente.",
+    };
+  }
+
+  const distanceKmRaw = haversineKm(STORE_LOCATION, coords);
+  const distanceKm = Math.round(distanceKmRaw * 100) / 100;
+  const feeCents = computeDeliveryFeeCents(distanceKmRaw);
+
+  return {
+    ok: true,
+    data: {
+      ok: distanceKmRaw <= DELIVERY_RADIUS_KM,
+      distanceKm,
+      radiusKm: DELIVERY_RADIUS_KM,
+      address: addressLabel || undefined,
+      cep: lookup.cep,
+      store: STORE_LOCATION,
+      target: coords,
+      feeCents,
+      windowLabel: buildDeliveryWindowLabel(),
+    },
+  };
 }

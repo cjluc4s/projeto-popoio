@@ -12,7 +12,12 @@ export default async function HomePage() {
   > = [];
   try {
     products = await prisma.product.findMany({
-      where: { available: true },
+      where: {
+        OR: [
+          { available: true },
+          { stockQty: { lte: 0 } },
+        ],
+      },
       include: { category: { select: { name: true } } },
       orderBy: [{ category: { name: "asc" } }, { name: "asc" }],
     });

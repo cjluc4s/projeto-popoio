@@ -1,11 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="max-w-sm mx-auto bg-white border rounded-lg p-6 mt-8">Carregando...</div>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
   const sp = useSearchParams();
   const callbackUrl = sp.get("callbackUrl") || "/";

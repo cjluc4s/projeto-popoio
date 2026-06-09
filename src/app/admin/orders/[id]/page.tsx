@@ -12,6 +12,14 @@ interface OrderItem {
   priceCents: number;
 }
 
+const statusLabel: Record<string, string> = {
+  pending: "Criado",
+  preparing: "Confirmado",
+  ready: "Em rota",
+  delivered: "Entregue",
+  cancelled: "Cancelado",
+};
+
 export default async function AdminOrderDetail({
   params,
 }: {
@@ -20,7 +28,13 @@ export default async function AdminOrderDetail({
   const { id } = await params;
   const order = await prisma.order.findUnique({
     where: { id },
-    include: { user: true },
+    include: {
+      user: true,
+      statusEvents: {
+        orderBy: { createdAt: "desc" },
+        include: { changedByUser: { select: { name: true, email: true } } },
+      },
+    },
   });
   if (!order) notFound();
   const items = order.items as unknown as OrderItem[];
@@ -64,8 +78,40 @@ export default async function AdminOrderDetail({
       </ul>
 
       <div className="flex justify-between font-bold text-lg">
+        <span>Subtotal</span>
+        <span>{formatBRL(order.subtotalCents)}</span>
+      </div>
+      <div className="flex justify-between text-sm text-stone-600">
+        <span>Taxa de entrega</span>
+        <span>{formatBRL(order.deliveryFeeCents)}</span>
+      </div>
+      <div className="flex justify-between font-bold text-lg border-t pt-2">
         <span>Total</span>
         <span>{formatBRL(order.totalCents)}</span>
+      </div>
+
+      <div className="text-sm border rounded p-3 space-y-1">
+        <p className="font-semibold text-stone-700">Entrega</p>
+        {order.deliveryAddress && (
+          <p>
+            <span className="text-stone-500">Endereço:</span> {order.deliveryAddress}
+          </p>
+        )}
+        {order.deliveryCep && (
+          <p>
+            <span className="text-stone-500">CEP:</span> {order.deliveryCep}
+          </p>
+        )}
+        {order.deliveryDistanceKm !== null && (
+          <p>
+            <span className="text-stone-500">Distância:</span> {order.deliveryDistanceKm.toLocaleString("pt-BR")} km
+          </p>
+        )}
+        {order.deliveryWindowLabel && (
+          <p>
+            <span className="text-stone-500">Janela:</span> {order.deliveryWindowLabel}
+          </p>
+        )}
       </div>
 
       {order.notes && (
@@ -76,6 +122,25 @@ export default async function AdminOrderDetail({
       )}
 
       <StatusEditor orderId={order.id} initial={order.status} />
+
+      <div className="border-t pt-3 space-y-2">
+        <p className="text-sm font-semibold text-stone-700">Histórico de status</p>
+        <ul className="space-y-2">
+          {order.statusEvents.map((ev) => (
+            <li key={ev.id} className="text-sm border rounded-md p-2">
+              <p className="font-medium">
+                {ev.fromStatus ? `${statusLabel[ev.fromStatus]} → ` : ""}
+                {statusLabel[ev.toStatus]}
+              </p>
+              <p className="text-stone-500 text-xs">
+                {new Date(ev.createdAt).toLocaleString("pt-BR")}
+                {ev.changedByUser?.name ? ` • por ${ev.changedByUser.name}` : ""}
+              </p>
+              {ev.note && <p className="text-stone-700 mt-1">{ev.note}</p>}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

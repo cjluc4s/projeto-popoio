@@ -45,11 +45,21 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
-  const data = { ...parsed.data };
+  const data: {
+    name?: string;
+    priceCents?: number;
+    description?: string | null;
+    barcode?: string | null;
+    stockQty?: number;
+    available?: boolean;
+    imageUrl?: string | null;
+    categoryId?: string | null;
+  } = {
+    ...parsed.data,
+  };
   const categoryName = normalizeCategoryName(parsed.data.category);
   if (data.barcode === "") data.barcode = null;
   if (data.imageUrl === "") data.imageUrl = null;
-  delete data.category;
   if (parsed.data.category !== undefined) {
     data.categoryId = await resolveCategoryIdByName(categoryName);
   }

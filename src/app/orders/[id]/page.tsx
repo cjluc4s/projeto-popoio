@@ -6,9 +6,9 @@ import { formatBRL } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 const statusLabel: Record<string, string> = {
-  pending: "Pendente",
-  preparing: "Em preparo",
-  ready: "Pronto",
+  pending: "Criado",
+  preparing: "Confirmado",
+  ready: "Em rota",
   delivered: "Entregue",
   cancelled: "Cancelado",
 };
@@ -60,9 +60,26 @@ export default async function OrderDetailPage({
         ))}
       </ul>
       <div className="flex justify-between font-bold text-lg">
+        <span>Subtotal</span>
+        <span>{formatBRL(order.subtotalCents)}</span>
+      </div>
+      <div className="flex justify-between text-sm text-stone-600">
+        <span>Taxa de entrega</span>
+        <span>{formatBRL(order.deliveryFeeCents)}</span>
+      </div>
+      <div className="flex justify-between font-bold text-lg border-t pt-2">
         <span>Total</span>
         <span>{formatBRL(order.totalCents)}</span>
       </div>
+      {(order.deliveryAddress || order.deliveryWindowLabel) && (
+        <div className="text-sm border rounded p-3 space-y-1">
+          <p className="font-semibold text-stone-700">Entrega</p>
+          {order.deliveryAddress && <p>{order.deliveryAddress}</p>}
+          {order.deliveryWindowLabel && (
+            <p className="text-stone-600">Janela prevista: {order.deliveryWindowLabel}</p>
+          )}
+        </div>
+      )}
       {order.notes && (
         <div className="text-sm">
           <span className="text-stone-500">Observações: </span>

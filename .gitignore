@@ -45,3 +45,6 @@ next-env.d.ts
 
 # dev logs
 .next-dev.*.log
+
+# local database backups
+/backups/

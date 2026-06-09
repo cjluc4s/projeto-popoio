@@ -94,7 +94,15 @@ async function main() {
   for (const p of products) {
     const existing = await prisma.product.findFirst({ where: { name: p.name } });
     if (!existing) {
-      await prisma.product.create({ data: p });
+      await prisma.product.create({
+        data: {
+          name: p.name,
+          priceCents: p.priceCents,
+          stockQty: p.stockQty,
+          description: p.description,
+          legacyCategory: p.category,
+        },
+      });
     }
   }
   console.log(`✓ ${products.length} produtos garantidos`);

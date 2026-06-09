@@ -5,9 +5,9 @@ import { formatBRL } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 const statusLabel: Record<string, string> = {
-  pending: "Pendente",
-  preparing: "Em preparo",
-  ready: "Pronto",
+  pending: "Criado",
+  preparing: "Confirmado",
+  ready: "Em rota",
   delivered: "Entregue",
   cancelled: "Cancelado",
 };

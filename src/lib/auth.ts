@@ -6,8 +6,11 @@ import { prisma } from "@/lib/db";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(1),
 });
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCK_MINUTES = 15;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -27,8 +30,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         if (!user) return null;
 
+        if (user.lockoutUntil && user.lockoutUntil > new Date()) {
+          throw new Error("ACCOUNT_LOCKED");
+        }
+
         const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
-        if (!ok) return null;
+        if (!ok) {
+          const nextAttempts = user.failedLoginAttempts + 1;
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              failedLoginAttempts: nextAttempts,
+              lockoutUntil:
+                nextAttempts >= MAX_FAILED_ATTEMPTS
+                  ? new Date(Date.now() + LOCK_MINUTES * 60 * 1000)
+                  : null,
+            },
+          });
+          return null;
+        }
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            failedLoginAttempts: 0,
+            lockoutUntil: null,
+            lastLoginAt: new Date(),
+          },
+        });
 
         return {
           id: user.id,

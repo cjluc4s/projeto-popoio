@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 
 const statusSchema = z.object({
   status: z.enum(["pending", "preparing", "ready", "delivered", "cancelled"]),
+  note: z.string().trim().max(200).optional(),
 });
 
 export async function GET(
@@ -18,7 +19,13 @@ export async function GET(
   const { id } = await params;
   const order = await prisma.order.findUnique({
     where: { id },
-    include: { user: { select: { name: true, email: true, phone: true } } },
+    include: {
+      user: { select: { name: true, email: true, phone: true } },
+      statusEvents: {
+        orderBy: { createdAt: "desc" },
+        include: { changedByUser: { select: { name: true, email: true } } },
+      },
+    },
   });
   if (!order) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
   if (!session.user.isAdmin && order.userId !== session.user.id) {
@@ -41,9 +48,32 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: "Status inválido" }, { status: 400 });
   }
-  const order = await prisma.order.update({
-    where: { id },
-    data: { status: parsed.data.status },
+  const current = await prisma.order.findUnique({ where: { id } });
+  if (!current) {
+    return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+  }
+
+  if (current.status === parsed.data.status) {
+    return NextResponse.json(current);
+  }
+
+  const order = await prisma.$transaction(async (tx) => {
+    const updated = await tx.order.update({
+      where: { id },
+      data: { status: parsed.data.status },
+    });
+
+    await tx.orderStatusEvent.create({
+      data: {
+        orderId: id,
+        fromStatus: current.status,
+        toStatus: parsed.data.status,
+        note: parsed.data.note,
+        changedByUserId: session.user.id,
+      },
+    });
+
+    return updated;
   });
   return NextResponse.json(order);
 }

@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const options = [
-  { value: "pending", label: "Pendente" },
-  { value: "preparing", label: "Em preparo" },
-  { value: "ready", label: "Pronto" },
+  { value: "pending", label: "Criado" },
+  { value: "preparing", label: "Confirmado" },
+  { value: "ready", label: "Em rota" },
   { value: "delivered", label: "Entregue" },
   { value: "cancelled", label: "Cancelado" },
 ];
@@ -20,6 +20,7 @@ export function StatusEditor({
 }) {
   const router = useRouter();
   const [status, setStatus] = useState(initial);
+  const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function update(next: string) {
@@ -28,13 +29,14 @@ export function StatusEditor({
     const res = await fetch(`/api/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: next }),
+      body: JSON.stringify({ status: next, note: note.trim() || undefined }),
     });
     setSaving(false);
     if (!res.ok) {
       alert("Erro ao atualizar status");
       setStatus(initial);
     } else {
+      setNote("");
       router.refresh();
     }
   }
@@ -54,6 +56,13 @@ export function StatusEditor({
           </option>
         ))}
       </select>
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        disabled={saving}
+        placeholder="Observação da alteração (opcional)"
+        className="w-full border rounded-md px-3 py-2 text-sm min-h-20"
+      />
     </div>
   );
 }

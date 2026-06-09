@@ -8,7 +8,8 @@ const schema = z.object({
   email: z.string().email(),
   password: z
     .string()
-    .min(7, "A senha deve ter pelo menos 7 caracteres.")
+    .min(8, "A senha deve ter pelo menos 8 caracteres.")
+    .max(72, "A senha deve ter no máximo 72 caracteres.")
     .regex(/[a-z]/, "A senha deve conter uma letra minúscula.")
     .regex(/[A-Z]/, "A senha deve conter uma letra maiúscula.")
     .regex(/\d/, "A senha deve conter um número.")
@@ -28,15 +29,16 @@ export async function POST(req: Request) {
     );
   }
   const { name, email, password, phone, address } = parsed.data;
+  const normalizedEmail = email.trim().toLowerCase();
 
-  const exists = await prisma.user.findUnique({ where: { email } });
+  const exists = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (exists) {
     return NextResponse.json({ error: "E-mail já cadastrado" }, { status: 409 });
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, phone, address },
+    data: { name, email: normalizedEmail, passwordHash, phone, address },
     select: { id: true, email: true, name: true },
   });
 
